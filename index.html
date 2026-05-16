@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dominum Url Checker</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="bg-[#09090b] text-slate-200 antialiased font-sans selection:bg-blue-500/30">
+    
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+      <div class="absolute inset-0 opacity-50 mix-blend-screen" style="filter: url('#gooey')">
+        <div class="blob bg-blue-600 w-[300px] h-[300px] md:w-[40vw] md:h-[40vw] blob-anim-1 -top-[10%] -left-[10%]"></div>
+        <div class="blob bg-purple-600 w-[350px] h-[350px] md:w-[45vw] md:h-[45vw] blob-anim-2 -bottom-[10%] -right-[5%]"></div>
+        <div class="blob bg-indigo-600 w-[250px] h-[250px] md:w-[35vw] md:h-[35vw] blob-anim-3 top-[30%] left-[40%]"></div>
+      </div>
+    </div>
+    
+    <svg class="hidden" width="0" height="0">
+      <filter id="gooey">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="60" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="
+            1 0 0 0 0  
+            0 1 0 0 0  
+            0 0 1 0 0  
+            0 0 0 40 -20" result="goo" />
+        <feGaussianBlur in="goo" stdDeviation="30" />
+      </filter>
+    </svg>
+
+    <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto">
+      <header class="mb-10 text-center md:text-left border-b border-slate-800/50 pb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
+            Dominum Url Checker
+          </h1>
+          <p class="text-sm text-slate-400 mt-1">
+            Powered by <a href="https://glseries.net" target="_blank" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">GlSeries LTSLink API</a>
+          </p>
+        </div>
+      </header>
+      
+      <main id="app-container" class="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div class="md:col-span-5 space-y-6">
+          <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
+            <div class="mb-6">
+              <label for="urlInput" class="block text-sm font-semibold text-slate-300 mb-2">URLs to Check</label>
+              <textarea id="urlInput" placeholder="example.com&#10;youtube.com&#10;github.com" class="w-full bg-[#131317] p-4 rounded-xl h-40 border border-slate-700/50 text-slate-200 font-mono text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all resize-y shadow-inner"></textarea>
+            </div>
+            
+            <div class="mb-6">
+              <label class="block text-sm font-semibold text-slate-300 mb-2">Filters</label>
+              <div class="relative w-full">
+                <button type="button" id="filterDropdownBtn" class="flex items-center justify-between w-full bg-[#131317] p-3.5 rounded-xl border border-slate-700/50 text-left transition-colors hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm">
+                  <span id="filterDropdownText" class="truncate font-medium text-slate-300">All Filters</span>
+                  <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="filterDropdownMenu" class="absolute z-50 w-full mt-2 bg-[#1a1a21] border border-slate-700 rounded-xl shadow-2xl hidden max-h-[300px] flex-col overflow-hidden">
+                  <div class="p-2 border-b border-slate-800 bg-[#131317]">
+                    <label class="flex items-center p-2 hover:bg-slate-800/50 rounded-lg cursor-pointer transition-colors group">
+                      <input type="checkbox" id="checkAllFilters" checked class="w-4 h-4 text-blue-500 bg-slate-900 border-slate-600 rounded focus:ring-blue-500 focus:ring-offset-0 mr-3 cursor-pointer">
+                      <span class="font-semibold text-blue-400 group-hover:text-blue-300 transition-colors text-sm">Select All Filters</span>
+                    </label>
+                  </div>
+                  <div id="filterListContainer" class="overflow-y-auto p-2 max-h-[250px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                    <div class="py-4 text-center text-slate-500 text-sm animate-pulse">Loading filters...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button id="checkBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3.5 rounded-xl font-bold tracking-wide transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>Scan URLs</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="md:col-span-7">
+          <div id="statusContainer" class="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-4 rounded-xl mb-6 hidden flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span id="statusText" class="font-medium">Checking URLs...</span>
+              </div>
+              <span id="statusCount" class="text-xs font-bold bg-blue-500/20 px-2 py-1 rounded-md">0 / 0</span>
+            </div>
+            <div class="w-full bg-slate-800/80 rounded-full h-1.5 mt-1 overflow-hidden">
+              <div id="statusProgress" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div id="errorContainer" class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-6 hidden items-center gap-3">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="errorText" class="font-medium text-sm"></span>
+          </div>
+
+          <div class="flex items-center justify-between mb-4 mt-1">
+            <h2 class="text-xl font-bold">Results Board</h2>
+            <span id="resultsCountBadge" class="text-xs font-semibold bg-slate-800 text-slate-300 px-3 py-1 rounded-full hidden">0 URLs Scanned</span>
+          </div>
+          
+          <div id="results" class="space-y-4">
+            <div class="flex flex-col items-center justify-center p-12 text-slate-500 border border-slate-800/50 border-dashed rounded-2xl bg-slate-900/20">
+              <svg class="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+              <p class="font-medium text-sm">Paste some URLs and check them.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
