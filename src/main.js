@@ -1,8 +1,10 @@
 import './style.css';
 
 const BASE_URL = 'https://live.glseries.net/api/v1';
+const BASE_URL_BACKUP = 'https://live-glseries.global.ssl.fastly.net/api/v1';
 
 const API_TOKEN = 'gl_534191c3cff620e89ee4d65c560756e8fc356f9838c41f80';
+const API_TOKEN_BACKUP = 'gl_89ca8cd4cbc993339422a47326819838b9ecefae968658ae';
 
 const FILTERS_DATA = [
   { key: 'fortiguard', name: 'FortiGuard' },
@@ -86,14 +88,33 @@ async function checkUrlsBatch(urls, filtersList) {
     const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
     
     try {
-      const response = await fetch(proxyUrl);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+      let data = null;
+      let lastError = null;
+
+      outer:
+      for (const base of [BASE_URL, BASE_URL_BACKUP]) {
+        for (const token of [API_TOKEN, API_TOKEN_BACKUP]) {
+          const tokenUrl = `${base}${endpoint}?token=${token}&url=${urlParam}${filterParam ? '&filters=' + filterParam : ''}`;
+          const tokenProxyUrl = `/api/proxy?url=${encodeURIComponent(tokenUrl)}`;
+          try {
+            const response = await fetch(tokenProxyUrl);
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+            const json = await response.json();
+            if (!json.success) throw new Error(json.error || 'Unknown error');
+            data = json;
+            break outer;
+          } catch (e) {
+            console.warn(`Failed with base=${base} token=${token}, trying next...`, e);
+            lastError = e;
+          }
+        }
       }
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Unknown error');
-      
+
+      if (!data) throw lastError;
+
       for (const key of Object.keys(data.results || {})) {
         allResults[key] = data.results[key];
       }
